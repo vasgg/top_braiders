@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "top braiders bot"
+name = "top_braiders_bot"
 description = ""
 version = "0.0.1"
 authors = [
