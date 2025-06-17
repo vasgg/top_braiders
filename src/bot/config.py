@@ -11,6 +11,7 @@ class BotConfig(BaseSettings):
     admin: int
     token: SecretStr
     stage: Stage
+    channel_id: int
 
     model_config = assign_config_dict(prefix="BOT_")
 
@@ -37,7 +38,7 @@ class DBConfig(BaseSettings):
     @property
     def pg_dsn(self) -> SecretStr:
         return SecretStr(
-            f"postgresql+asyncpg://" f"{self.user}:{self.password.get_secret_value()}@{self.host}:{self.port}/{self.name}"
+            f"postgresql+asyncpg://{self.user}:{self.password.get_secret_value()}@{self.host}:{self.port}/{self.name}"
         )
 
     model_config = assign_config_dict(prefix="DB_")

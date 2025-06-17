@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bot"
+name = "top braiders bot"
 description = ""
 version = "0.0.1"
 authors = [
@@ -29,7 +29,7 @@ dependencies = [
 ]
 
 [tool.ruff]
-line-length = 129
+line-length = 119
 target-version = "py313"
 exclude = [
     "alembic",
