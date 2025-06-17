@@ -14,9 +14,19 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(BigInteger, nullable=False, unique=True, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     fullname: Mapped[str]
     username: Mapped[str | None] = mapped_column(String(32))
+    fio: Mapped[str | None]
+    phone: Mapped[str | None]
+    city: Mapped[str | None]
+    experience: Mapped[str | None]
+    portfolio: Mapped[str | None]
+    essay: Mapped[str | None]
+    photo_id: Mapped[str | None]
+    screenshot: Mapped[str | None]
+    is_paid: Mapped[bool | None]
+    payment_id: Mapped[str | None]
 
     def __str__(self):
         return f"{self.__class__.__name__}(id: {self.id}, fullname: {self.fullname})"
