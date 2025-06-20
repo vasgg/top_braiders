@@ -4,17 +4,16 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, FSInputFile, Message
 from aiogram.utils.chat_action import ChatActionSender
 
-from bot.config import Settings
 from bot.enums import AcceptanceChoice
 from bot.internal.callbacks import AcceptanceCallbackFactory
 from bot.internal.context import FORM_FIELDS, FORM_QUESTIONS, Form
-from bot.internal.controllers import compose_braider_form
 from bot.internal.keyboards import get_acceptance_kb, payment_kb, request_contact_kb, yes_kb
 from bot.internal.lexicon import text
 from database.models import User
 
 router = Router()
 warned_media_groups = set()
+
 
 @router.message(CommandStart())
 async def start_message(
@@ -54,6 +53,20 @@ async def essay_handler(
     await state.set_state(Form.photo_id)
 
 
+@router.message(F.document)
+async def document_handler(
+    message: types.Message,
+    state: FSMContext,
+):
+    current_state = await state.get_state()
+    field = current_state.split(":")[-1]
+    if field in ("photo_id", "repost"):
+        await message.answer("Принимаются только фотографии, а не файлы. Пожалуйста, отправьте фотографию.")
+        return
+    else:
+        return
+
+
 @router.message(StateFilter(Form), F.photo)
 async def photo_handler(
     message: Message,
@@ -66,10 +79,7 @@ async def photo_handler(
         key = (message.chat.id, message.media_group_id)
         if key not in warned_media_groups:
             warned_media_groups.add(key)
-            await message.bot.send_message(
-                message.chat.id,
-                "Отправьте одну фотографию."
-            )
+            await message.bot.send_message(message.chat.id, "Отправьте одну фотографию.")
         return
     match field:
         case "photo_id":
@@ -82,9 +92,7 @@ async def photo_handler(
             user.screenshot = photo_id
             file_path = "src/bot/internal/data/IMG.PNG"
             await message.answer_photo(
-                FSInputFile(path=file_path),
-                caption=FORM_QUESTIONS["is_paid"],
-                reply_markup=payment_kb
+                FSInputFile(path=file_path), caption=FORM_QUESTIONS["is_paid"], reply_markup=payment_kb
             )
             await state.set_state(Form.payment_id)
         case _:
@@ -136,26 +144,22 @@ async def form_handler(
                 await state.set_state(Form.essay)
             case "payment_id":
                 await message.answer(text=FORM_QUESTIONS["acceptance"], reply_markup=get_acceptance_kb())
-
+                await state.set_state()
 
 
 @router.callback_query(AcceptanceCallbackFactory.filter())
 async def payment_handler(
     callback: CallbackQuery,
     callback_data: AcceptanceCallbackFactory,
-    user: User,
-    settings: Settings
+    # user: User,
+    # settings: Settings,
 ):
     await callback.answer()
     match callback_data.choice:
         case AcceptanceChoice.YES:
             await callback.message.edit_text(text=text["final"])
-            caption = compose_braider_form(user)
-            await callback.bot.send_photo(
-                chat_id=settings.bot.channel_id,
-                photo=user.photo_id,
-                caption=caption
-            )
+            # caption = compose_braider_form(user)
+            # await callback.bot.send_photo(chat_id=settings.bot.channel_id, photo=user.photo_id, caption=caption)
         case AcceptanceChoice.NO:
             await callback.message.edit_text(text=text["no_acceptance"])
             await callback.message.answer(text=FORM_QUESTIONS["acceptance"], reply_markup=get_acceptance_kb())
