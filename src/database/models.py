@@ -26,6 +26,7 @@ class User(Base):
     photo_id: Mapped[str | None]
     screenshot: Mapped[str | None]
     is_paid: Mapped[bool | None]
+    is_published: Mapped[bool] = mapped_column(default=False, server_default="false")
     payment_id: Mapped[str | None]
 
     def __str__(self):
