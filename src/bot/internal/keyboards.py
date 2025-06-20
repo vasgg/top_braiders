@@ -26,7 +26,7 @@ request_contact_kb = ReplyKeyboardMarkup(
     keyboard=[
         [
             KeyboardButton(
-                text="Оставь свой номер для связи.",
+                text="✅ Поделиться",
                 request_contact=True,
             )
         ]
