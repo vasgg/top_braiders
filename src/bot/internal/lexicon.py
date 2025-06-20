@@ -15,7 +15,7 @@ text = {
              "Телеграм https://t.me/topbraiding\n"
              "Инстаграм https://instagram.com/topbraiding\n"
              "ВКонтакте https://vk.com/topbraiding\n"
-             "По любым вопросам можешь обращаться в нашу Службу поддержки (тут будет ссылка).",
+             "По любым вопросам можешь обращаться в нашу Службу поддержки @top_braiding.",
     "summary": "Анкета пользователя {fullname}:\n\n"
                "Телеграм юзернейм: {username}\n"
                "ФИО и псевдоним: {fio}\n"
