@@ -16,6 +16,13 @@ class BotConfig(BaseSettings):
     model_config = assign_config_dict(prefix="BOT_")
 
 
+class CourseConfig(BaseSettings):
+    api_key: SecretStr
+    account_name: str
+
+    model_config = assign_config_dict(prefix="COURSE_")
+
+
 class RedisConfig(BaseSettings):
     host: str
     port: int
@@ -46,6 +53,7 @@ class DBConfig(BaseSettings):
 
 class Settings(BaseSettings):
     bot: BotConfig = Field(default_factory=BotConfig)
+    course: CourseConfig = Field(default_factory=CourseConfig)
     redis: RedisConfig = Field(default_factory=RedisConfig)
     db: DBConfig = Field(default_factory=DBConfig)
 
