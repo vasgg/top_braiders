@@ -1,4 +1,5 @@
 import asyncio
+from asyncio import create_task
 import logging.config
 
 from aiogram import Bot, Dispatcher
@@ -11,6 +12,7 @@ from bot.config import Settings, get_settings
 from bot.handlers.base import router as base_router
 from bot.handlers.errors import router as errors_router
 from bot.internal.commands import set_bot_commands
+from bot.internal.controllers import daily_routine
 from bot.internal.helpers import setup_logs
 from bot.internal.notify_admin import on_shutdown, on_startup
 from bot.middlewares.auth import AuthMiddleware
@@ -45,7 +47,8 @@ async def main():
     dispatcher.shutdown.register(on_shutdown)
     dispatcher.startup.register(set_bot_commands)
     dispatcher.include_routers(base_router, errors_router)
-
+    # noinspection PyUnusedLocal
+    daily_task = create_task(daily_routine(settings, bot, db))
     logging.info("bot started")
     await dispatcher.start_polling(bot)
 

@@ -12,6 +12,7 @@ class BotConfig(BaseSettings):
     token: SecretStr
     stage: Stage
     channel_id: int
+    utc_starting_mark: int
 
     model_config = assign_config_dict(prefix="BOT_")
 

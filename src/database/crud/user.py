@@ -1,8 +1,13 @@
+from logging import getLogger
+
 from aiogram.types import User as AiogramUser
 from sqlalchemy import Result, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import User
+
+
+logger = getLogger(__name__)
 
 
 async def add_user_to_db(user: AiogramUser, db_session) -> User:
@@ -18,6 +23,21 @@ async def add_user_to_db(user: AiogramUser, db_session) -> User:
 
 async def get_user_from_db_by_tg_id(telegram_id: int, db_session: AsyncSession) -> User | None:
     query = select(User).filter(User.id == telegram_id)
+    result: Result = await db_session.execute(query)
+    user = result.scalar()
+    return user
+
+
+async def get_all_payment_ids(db_session: AsyncSession) -> set[str]:
+    query = select(User.payment_id).where(User.payment_id.isnot(None), User.is_paid.is_(False))
+    result = await db_session.scalars(query)
+    payment_ids = set(result)
+    logger.info("All unpaid payment_ids: %s", payment_ids)
+    return payment_ids
+
+
+async def get_user_by_payment_id(payment_id: str, db_session: AsyncSession) -> User:
+    query = select(User).where(User.payment_id == payment_id)
     result: Result = await db_session.execute(query)
     user = result.scalar()
     return user
