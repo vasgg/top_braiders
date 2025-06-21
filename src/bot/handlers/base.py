@@ -126,6 +126,9 @@ async def form_handler(
 
     user_answer = message.text.strip()
 
+    if field == "payment_id":
+        user_answer.lstrip('#')
+
     setattr(user, field, user_answer)
 
     async with ChatActionSender.typing(bot=message.bot, chat_id=message.chat.id):
