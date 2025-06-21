@@ -95,8 +95,6 @@ async def photo_handler(
                 FSInputFile(path=file_path), caption=FORM_QUESTIONS["is_paid"], reply_markup=payment_kb
             )
             await state.set_state(Form.payment_id)
-        case _:
-            return
 
 
 @router.message(F.contact)
@@ -127,7 +125,7 @@ async def form_handler(
     user_answer = message.text.strip()
 
     if field == "payment_id":
-        user_answer.lstrip('#')
+        user_answer.lstrip("#")
 
     setattr(user, field, user_answer)
 
@@ -154,15 +152,11 @@ async def form_handler(
 async def payment_handler(
     callback: CallbackQuery,
     callback_data: AcceptanceCallbackFactory,
-    # user: User,
-    # settings: Settings,
 ):
     await callback.answer()
     match callback_data.choice:
         case AcceptanceChoice.YES:
             await callback.message.edit_text(text=text["final"])
-            # caption = compose_braider_form(user)
-            # await callback.bot.send_photo(chat_id=settings.bot.channel_id, photo=user.photo_id, caption=caption)
         case AcceptanceChoice.NO:
             await callback.message.edit_text(text=text["no_acceptance"])
             await callback.message.answer(text=FORM_QUESTIONS["acceptance"], reply_markup=get_acceptance_kb())
