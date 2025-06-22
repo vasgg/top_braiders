@@ -4,7 +4,6 @@ from aiogram.types import User as AiogramUser
 from sqlalchemy import Result, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.internal.controllers import extract_digits
 from database.models import User
 
 
@@ -30,6 +29,7 @@ async def get_user_from_db_by_tg_id(telegram_id: int, db_session: AsyncSession) 
 
 
 async def get_all_payment_ids(db_session: AsyncSession) -> set[str]:
+    from bot.internal.controllers import extract_digits
     query = select(User.payment_id).where(User.payment_id.isnot(None), User.is_paid.is_(False))
     result = await db_session.scalars(query)
     payment_ids = {extract_digits(payment_id) for payment_id in result if payment_id}
