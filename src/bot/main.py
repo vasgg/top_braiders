@@ -1,5 +1,4 @@
-import asyncio
-from asyncio import create_task
+from asyncio import CancelledError, Task, create_task, run
 import logging.config
 
 from aiogram import Bot, Dispatcher
@@ -21,6 +20,17 @@ from bot.middlewares.updates_dumper import UpdatesDumperMiddleware
 from database.db_connector import get_db
 
 
+def log_task_exceptions(task: Task):
+    try:
+        exc = task.exception()
+        if exc:
+            logging.error("Unhandled exception in background task: %s", exc, exc_info=exc)
+    except CancelledError:
+        pass
+    except Exception as e:
+        logging.error("Error while retrieving task exception: %s", e)
+
+
 async def main():
     setup_logs("bot")
     settings: Settings = get_settings()
@@ -33,9 +43,14 @@ async def main():
         password=settings.redis.password.get_secret_value(),
         decode_responses=True,
     )
+
     storage = RedisStorage(redis_client)
-    dispatcher = Dispatcher(storage=storage, settings=settings)
     db = get_db(settings)
+
+    daily_task = create_task(daily_routine(settings, bot, db))
+    daily_task.add_done_callback(log_task_exceptions)
+
+    dispatcher = Dispatcher(storage=storage, settings=settings, task=daily_task)
 
     db_session_middleware = DBSessionMiddleware(db)
     dispatcher.message.middleware(db_session_middleware)
@@ -47,14 +62,13 @@ async def main():
     dispatcher.shutdown.register(on_shutdown)
     dispatcher.startup.register(set_bot_commands)
     dispatcher.include_routers(base_router, errors_router)
-    # noinspection PyUnusedLocal
-    daily_task = create_task(daily_routine(settings, bot, db))
+
     logging.info("bot started")
     await dispatcher.start_polling(bot)
 
 
 def run_main():
-    asyncio.run(main())
+    run(main())
 
 
 if __name__ == "__main__":

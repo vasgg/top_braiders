@@ -1,3 +1,4 @@
+from asyncio import CancelledError, Task, wait_for
 import logging
 import os
 
@@ -32,10 +33,15 @@ async def on_startup(bot: Bot, settings: Settings) -> None:
     )
 
 
-async def on_shutdown(bot: Bot, settings: Settings) -> None:
+async def on_shutdown(bot: Bot, settings: Settings, task: Task) -> None:
     folder = get_folder_name()
     await notify_admin(
         bot,
         settings.bot.admin,
         f"<b>{folder} shutdown</b>",
     )
+    task.cancel()
+    try:
+        await wait_for(task, timeout=10)
+    except (CancelledError, TimeoutError):
+        pass

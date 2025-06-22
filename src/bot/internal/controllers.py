@@ -133,8 +133,16 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
                 if payment_id in payments_set:
                     user = await get_user_by_payment_id(payment_id, db_session)
                     user.is_paid = True
+                    photo_msg = await bot.send_photo(
+                        chat_id=settings.bot.channel_id,
+                        photo=user.photo_id
+                    )
                     caption = compose_braider_form(user)
-                    await bot.send_photo(chat_id=settings.bot.channel_id, photo=user.photo_id, caption=caption)
+                    await bot.send_message(
+                        chat_id=settings.bot.channel_id,
+                        text=caption,
+                        reply_to_message_id=photo_msg.message_id
+                    )
                     user.is_published = True
                     logger.info("User %s is paid and published", user.fullname)
                     await sleep(0.5)
