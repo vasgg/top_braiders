@@ -1,7 +1,7 @@
 from aiogram import F, Router, types
 from aiogram.filters import CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, FSInputFile, Message
+from aiogram.types import CallbackQuery, FSInputFile, Message, ReplyKeyboardRemove
 from aiogram.utils.chat_action import ChatActionSender
 
 from bot.enums import AcceptanceChoice
@@ -109,7 +109,7 @@ async def handle_contact(
         return
     phone = message.contact.phone_number
     user.phone = phone
-    await message.answer(text=FORM_QUESTIONS["city"])
+    await message.answer(text=FORM_QUESTIONS["city"], reply_markup=ReplyKeyboardRemove())
     await state.set_state(Form.city)
 
 
