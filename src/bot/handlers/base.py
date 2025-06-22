@@ -97,7 +97,7 @@ async def photo_handler(
             await state.set_state(Form.payment_id)
 
 
-@router.message(F.contact)
+@router.message(StateFilter(Form), F.contact)
 async def handle_contact(
     message: Message,
     user: User,
