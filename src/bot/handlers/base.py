@@ -123,7 +123,9 @@ async def form_handler(
     field = current_state.split(":")[-1]
 
     user_answer = message.text.strip()
-
+    if field == "phone":
+        await message.answer(text=text["no_text_phone"])
+        return
     if field == "payment_id":
         user_answer.lstrip("#")
 
