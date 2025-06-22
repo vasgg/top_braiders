@@ -91,6 +91,10 @@ def compose_braider_form(user: User) -> str:
     )
 
 
+def extract_digits(string: str) -> str:
+    return ''.join(c for c in string if c.isdigit())
+
+
 async def wait_for_deals(settings, export_id, retries=3, delay=5.0):
     for attempt in range(1, retries + 1):
         await sleep(delay)
