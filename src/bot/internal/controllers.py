@@ -136,6 +136,9 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
                 payment_id = deal[3]
                 if payment_id in payments_set:
                     user = await get_user_by_payment_id(payment_id, db_session)
+                    if not user:
+                        logger.warning("User with payment_id=%s not found", payment_id)
+                        continue
                     user.is_paid = True
                     photo_msg = await bot.send_photo(
                         chat_id=settings.bot.channel_id,
