@@ -90,7 +90,7 @@ async def photo_handler(
         case "repost":
             photo_id = message.photo[-1].file_id
             user.screenshot = photo_id
-            file_path = "src/bot/internal/data/IMG.PNG"
+            file_path = "src/bot/internal/data/img.png"
             await message.answer_photo(
                 FSInputFile(path=file_path), caption=FORM_QUESTIONS["is_paid"], reply_markup=payment_kb
             )
