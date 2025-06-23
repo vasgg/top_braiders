@@ -130,7 +130,7 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
         except Exception as e:
             logger.exception(f"Error while waiting for deals: {e}")
             continue
-        async with db_connector.session_factory as db_session:
+        async with db_connector.session_factory() as db_session:
             payments_set = await get_all_payment_ids(db_session)
             for deal in deals:
                 payment_id = deal[3]
