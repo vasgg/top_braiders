@@ -151,4 +151,5 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
                     db_session.add(user)
                     await db_session.commit()
                     logger.info("User %s is paid and published", user.fullname)
-                    await sleep(0.5)
+                    await sleep(8)
+        logger.info("Daily routine finished")
