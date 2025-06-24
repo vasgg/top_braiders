@@ -7,6 +7,7 @@ from aiogram.utils.chat_action import ChatActionSender
 from bot.enums import AcceptanceChoice
 from bot.internal.callbacks import AcceptanceCallbackFactory
 from bot.internal.context import FORM_FIELDS, FORM_QUESTIONS, Form
+from bot.internal.controllers import extract_digits
 from bot.internal.keyboards import get_acceptance_kb, payment_kb, request_contact_kb, yes_kb
 from bot.internal.lexicon import text
 from database.models import User
@@ -95,6 +96,9 @@ async def photo_handler(
                 FSInputFile(path=file_path), caption=FORM_QUESTIONS["is_paid"], reply_markup=payment_kb
             )
             await state.set_state(Form.payment_id)
+        case "payment_id":
+            await message.answer(text=text["no_photo_payment"])
+            return
 
 
 @router.message(StateFilter(Form), F.contact)
