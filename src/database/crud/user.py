@@ -42,3 +42,10 @@ async def get_user_by_payment_id(payment_id: str, db_session: AsyncSession) -> U
     result: Result = await db_session.execute(query)
     user = result.scalar()
     return user
+
+
+async def get_user_ids_without_payment(db_session: AsyncSession) -> list[int]:
+    query = select(User.id).where(User.payment_id.is_(None))
+    result: Result = await db_session.execute(query)
+    user_ids = list(result.scalars().all())
+    return user_ids

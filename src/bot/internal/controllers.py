@@ -8,7 +8,7 @@ import aiohttp
 
 from bot.config import Settings
 from bot.internal.lexicon import text
-from database.crud.user import get_all_payment_ids, get_user_by_payment_id
+from database.crud.user import get_all_payment_ids, get_user_by_payment_id, get_user_ids_without_payment
 from database.db_connector import DatabaseConnector
 from database.models import User
 
@@ -155,4 +155,6 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
                     await db_session.commit()
                     logger.info("User %s is paid and published", user.fullname)
                     await sleep(8)
+            users_without_payment = await get_user_ids_without_payment(db_session)
+            logger.info("Users without payment: %s", users_without_payment)
         logger.info("Daily routine finished")
