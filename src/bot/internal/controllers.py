@@ -166,17 +166,6 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
                     logger.info("User %s is notified", user_id)
                 except Exception as e:
                     logger.exception(e)
-        logger.info("Users without payment are notified")
-            logger.info("Users without payment: %s", users_without_payment)
-            for user_id in users_without_payment:
-                try:
-                    await bot.send_message(
-                        chat_id=user_id,
-                        text=text["no_text_payment"],
-                    )
-                    await sleep(8)
-                    logger.info("User %s is notified", user_id)
-                except Exception as e:
-                    logger.exception(e)
+        logger.info("Users without payment: %s", users_without_payment)
         logger.info("Users without payment are notified")
         logger.info("Daily routine finished")
