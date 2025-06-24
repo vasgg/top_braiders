@@ -131,7 +131,7 @@ async def form_handler(
         await message.answer(text=text["no_text_phone"])
         return
     if field == "payment_id":
-        user_answer.lstrip("#")
+        user_answer = extract_digits(user_answer)
 
     setattr(user, field, user_answer)
 
