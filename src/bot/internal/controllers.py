@@ -140,6 +140,9 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
                     if not user:
                         logger.warning("User with payment_id=%s not found", payment_id)
                         continue
+                    if user.is_published:
+                        logger.info("User %s already published, skipping", user.fullname)
+                        continue
                     user.is_paid = True
                     photo_msg = await bot.send_photo(
                         chat_id=settings.bot.channel_id,
