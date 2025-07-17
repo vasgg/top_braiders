@@ -9,7 +9,7 @@ import aiohttp
 
 from bot.config import Settings
 from bot.internal.lexicon import text
-from database.crud.user import get_all_payment_ids, get_user_by_payment_id, get_user_ids_without_payment
+from database.crud.user import get_all_payment_ids, get_user_by_payment_id, get_users_with_payment_but_not_published
 from database.db_connector import DatabaseConnector
 from database.models import User
 
@@ -196,4 +196,5 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
         #             logger.exception(e)
         # logger.info("Users without payment: %s", users_without_payment)
         # logger.info("Users without payment are notified")
+        logger.info(f"Published {len(users)} new users")
         logger.info("Daily routine finished")
