@@ -49,3 +49,10 @@ async def get_user_ids_without_payment(db_session: AsyncSession) -> list[int]:
     result: Result = await db_session.execute(query)
     user_ids = list(result.scalars().all())
     return user_ids
+
+
+async def get_users_with_payment_but_not_published(db_session: AsyncSession) -> list[User]:
+    query = select(User).where(User.is_paid.is_(True), User.is_published.is_(False))
+    result: Result = await db_session.execute(query)
+    users = list(result.scalars().all())
+    return users
