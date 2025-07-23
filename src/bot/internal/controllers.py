@@ -9,7 +9,7 @@ import aiohttp
 
 from bot.config import Settings
 from bot.internal.lexicon import text
-from database.crud.user import get_all_payment_ids, get_user_by_payment_id, get_users_with_payment_but_not_published
+from database.crud.user import get_all_payment_ids, get_user_by_payment_id, get_user_ids_without_payment
 from database.db_connector import DatabaseConnector
 from database.models import User
 
@@ -180,21 +180,30 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
             #     await db_session.commit()
             #     logger.info("User %s is published", user.fullname)
             #     await sleep(8)
+            logger.info("Daily routine finished")
+            TARGET_DATES = {
+                "2025-07-24": "7_days_left",
+                "2025-07-28": "3_days_left",
+                "2025-07-31": "0_days_left"
+            }
+            current_date_str = datetime.now(UTC).strftime("%Y-%m-%d")
+            notification_key = TARGET_DATES.get(current_date_str)
 
-        #     users_without_payment = await get_user_ids_without_payment(db_session)
-        #     for user_id in users_without_payment:
-        #         try:
-        #             await bot.send_message(
-        #                 chat_id=user_id,
-        #                 text=text["no_text_payment"],
-        #             )
-        #             await sleep(8)
-        #             logger.info("User %s is notified", user_id)
-        #         except TelegramForbiddenError:
-        #             logger.info("User %s blocked the bot", user_id)
-        #         except Exception as e:
-        #             logger.exception(e)
-        # logger.info("Users without payment: %s", users_without_payment)
-        # logger.info("Users without payment are notified")
-        # logger.info(f"Published {len(users)} new users")
-        logger.info("Daily routine finished")
+            if not notification_key:
+                return
+
+            users_without_payment = await get_user_ids_without_payment(db_session)
+            for user_id in users_without_payment:
+                try:
+                    await bot.send_message(
+                        chat_id=user_id,
+                        text=text[notification_key],
+                    )
+                    await sleep(8)
+                    logger.info("User %s is notified", user_id)
+                except TelegramForbiddenError:
+                    logger.info("User %s blocked the bot", user_id)
+                except Exception as e:
+                    logger.exception(e)
+        logger.info("Users without payment: %s", users_without_payment)
+        logger.info(f"{len(users_without_payment)} users without payment are notified")
