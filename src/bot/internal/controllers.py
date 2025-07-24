@@ -199,7 +199,7 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
                         chat_id=user_id,
                         text=text[notification_key],
                     )
-                    await sleep(8)
+                    await sleep(0.1)
                     logger.info("User %s is notified", user_id)
                 except TelegramForbiddenError:
                     logger.info("User %s blocked the bot", user_id)
