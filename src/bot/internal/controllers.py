@@ -153,7 +153,6 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
                         chat_id=settings.bot.channel_id,
                         text=caption,
                         reply_to_message_id=photo_msg.message_id,
-                        parse_mode=None,
                     )
                     user.is_published = True
                     db_session.add(user)
