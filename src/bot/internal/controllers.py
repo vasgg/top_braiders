@@ -160,26 +160,6 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
                     logger.info("User %s is paid and published", user.fullname)
                     await sleep(8)
 
-            # users = await get_users_with_payment_but_not_published(db_session)
-            # for user in users:
-            #     if user.is_published:
-            #         logger.info("User %s already published, skipping", user.fullname)
-            #         continue
-            #     photo_msg = await bot.send_photo(
-            #         chat_id=settings.bot.channel_id,
-            #         photo=user.photo_id
-            #     )
-            #     caption = compose_braider_form(user)
-            #     await bot.send_message(
-            #         chat_id=settings.bot.channel_id,
-            #         text=caption,
-            #         reply_to_message_id=photo_msg.message_id
-            #     )
-            #     user.is_published = True
-            #     db_session.add(user)
-            #     await db_session.commit()
-            #     logger.info("User %s is published", user.fullname)
-            #     await sleep(8)
             logger.info("Daily routine finished")
             TARGET_DATES = {
                 "2025-07-24": "7_days_left",
@@ -190,7 +170,8 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
             notification_key = TARGET_DATES.get(current_date_str)
 
             if not notification_key:
-                return
+                logger.info("No notification for %s", current_date_str)
+                continue
 
             users_without_payment = await get_user_ids_without_payment(db_session)
             for user_id in users_without_payment:
