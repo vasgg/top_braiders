@@ -1,7 +1,7 @@
 from logging import getLogger
 
 from aiogram.types import User as AiogramUser
-from sqlalchemy import Result, select
+from sqlalchemy import Result, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import User
@@ -56,3 +56,10 @@ async def get_users_with_payment_but_not_published(db_session: AsyncSession) -> 
     result: Result = await db_session.execute(query)
     users = list(result.scalars().all())
     return users
+
+
+async def get_users_count(db_session: AsyncSession) -> int:
+    query = select(func.count(User.id))
+    result: Result = await db_session.execute(query)
+    count = result.scalar()
+    return count

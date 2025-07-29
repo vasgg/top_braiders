@@ -52,11 +52,20 @@ class DBConfig(BaseSettings):
     model_config = assign_config_dict(prefix="DB_")
 
 
+class NgrokConfig(BaseSettings):
+    url: SecretStr
+    user: SecretStr
+    password: SecretStr
+
+    model_config = assign_config_dict(prefix="NGROK_")
+
+
 class Settings(BaseSettings):
     bot: BotConfig = Field(default_factory=BotConfig)
     course: CourseConfig = Field(default_factory=CourseConfig)
     redis: RedisConfig = Field(default_factory=RedisConfig)
     db: DBConfig = Field(default_factory=DBConfig)
+    ngrok: NgrokConfig = Field(default_factory=NgrokConfig)
 
     model_config = assign_config_dict()
 
