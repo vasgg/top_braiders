@@ -1,3 +1,4 @@
+import asyncio
 from asyncio import sleep
 from datetime import UTC, datetime, timedelta
 import json
@@ -198,16 +199,20 @@ async def sheet_update(cell: str, value: int):
         settings.ngrok.password.get_secret_value(),
     )
     ngrok_url = settings.ngrok.url.get_secret_value()
-    url = f'{ngrok_url}/gsheet/update/{cell}/{value}'
+
+    url = f"{ngrok_url}/gsheet/update/{cell}/{value}"
+    timeout = ClientTimeout(total=5)
 
     try:
-        async with ClientSession(timeout=ClientTimeout(total=6)) as session:
+        async with ClientSession(timeout=timeout) as session:
             async with session.post(url, auth=auth) as resp:
-                logger.info(f"[sheet_update] POST {url} → {resp.status}")
+                logger.info(f"[sheet_update] ✅ POST {url} → {resp.status}")
+    except asyncio.TimeoutError:
+        logger.warning(f"[sheet_update] ⚠️ Timeout (>{timeout.total}s): {url}")
     except ClientError as e:
-        logger.warning(f"[sheet_update] Request failed: {e}")
+        logger.warning(f"[sheet_update] ⚠️ ClientError: {e} → {url}")
     except Exception as e:
-        logger.exception(f"[sheet_update] Unexpected error: {e}")
+        logger.exception(f"[sheet_update] ❌ Unexpected error: {e} → {url}")
 
 
 async def blink1(color: str):
