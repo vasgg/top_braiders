@@ -6,7 +6,7 @@ from logging import getLogger
 from aiogram import Bot
 from aiogram.exceptions import TelegramForbiddenError
 import aiohttp
-from aiohttp import BasicAuth, ClientSession
+from aiohttp import BasicAuth, ClientError, ClientSession, ClientTimeout
 
 from bot.config import Settings, get_settings
 from bot.internal.lexicon import text
@@ -198,15 +198,16 @@ async def sheet_update(cell: str, value: int):
         settings.ngrok.password.get_secret_value(),
     )
     ngrok_url = settings.ngrok.url.get_secret_value()
+    url = f'{ngrok_url}/gsheet/update/{cell}/{value}'
+
     try:
-        async with ClientSession() as session:
-            await session.post(
-                f'{ngrok_url}/gsheet/update/{cell}/{value}',
-                auth=auth,
-                timeout=3,
-            )
-    except Exception:
-        pass
+        async with ClientSession(timeout=ClientTimeout(total=3)) as session:
+            async with session.post(url, auth=auth) as resp:
+                logger.info(f"[sheet_update] POST {url} → {resp.status}")
+    except ClientError as e:
+        logger.warning(f"[sheet_update] Request failed: {e}")
+    except Exception as e:
+        logger.exception(f"[sheet_update] Unexpected error: {e}")
 
 
 async def blink1(color: str):
@@ -216,13 +217,13 @@ async def blink1(color: str):
         settings.ngrok.password.get_secret_value(),
     )
     ngrok_url = settings.ngrok.url.get_secret_value()
+    url = f'{ngrok_url}/blink/{color}'
 
-    async with ClientSession() as session:
-        try:
-            await session.get(
-                f'{ngrok_url}/blink/{color}',
-                auth=auth,
-                timeout=3,
-            )
-        except Exception:
-            pass
+    try:
+        async with ClientSession(timeout=ClientTimeout(total=3)) as session:
+            async with session.get(url, auth=auth) as resp:
+                logger.info(f"[blink1] POST {url} → {resp.status}")
+    except ClientError as e:
+        logger.warning(f"[blink1] Request failed: {e}")
+    except Exception as e:
+        logger.exception(f"[blink1] Unexpected error: {e}")
