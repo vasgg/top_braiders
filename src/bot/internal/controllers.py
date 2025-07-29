@@ -1,4 +1,4 @@
-from asyncio import create_task, sleep
+from asyncio import sleep
 from datetime import UTC, datetime, timedelta
 import json
 from logging import getLogger
@@ -198,15 +198,15 @@ async def sheet_update(cell: str, value: int):
         settings.ngrok.password.get_secret_value(),
     )
     ngrok_url = settings.ngrok.url.get_secret_value()
-
-    async def _send_sheet_update():
+    try:
         async with ClientSession() as session:
-            try:
-                await session.post(f'{ngrok_url}/gsheet/update/{cell}/{value}', auth=auth)
-            except Exception:
-                pass
-
-    create_task(_send_sheet_update())
+            await session.post(
+                f'{ngrok_url}/gsheet/update/{cell}/{value}',
+                auth=auth,
+                timeout=3,
+            )
+    except Exception:
+        pass
 
 
 async def blink1(color: str):
@@ -217,11 +217,12 @@ async def blink1(color: str):
     )
     ngrok_url = settings.ngrok.url.get_secret_value()
 
-    async def _send_color():
-        async with ClientSession() as session:
-            try:
-                await session.get(f'{ngrok_url}/blink/{color}', auth=auth)
-            except Exception:
-                pass
-
-    create_task(_send_color())
+    async with ClientSession() as session:
+        try:
+            await session.get(
+                f'{ngrok_url}/blink/{color}',
+                auth=auth,
+                timeout=3,
+            )
+        except Exception:
+            pass

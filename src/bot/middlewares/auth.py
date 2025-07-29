@@ -1,3 +1,4 @@
+from asyncio import create_task
 from typing import Any, Awaitable, Callable, Dict
 
 from aiogram import BaseMiddleware
@@ -22,7 +23,7 @@ class AuthMiddleware(BaseMiddleware):
             user = await add_user_to_db(event.from_user, db_session)
             if settings.bot.stage == Stage.PROD:
                 users_count = await get_users_count(db_session)
-                await blink1('cyan')
-                await sheet_update('C8', users_count)
+                create_task(blink1('cyan'))
+                create_task(sheet_update('C8', users_count))
         data["user"] = user
         return await handler(event, data)
