@@ -201,7 +201,7 @@ async def sheet_update(cell: str, value: int):
     url = f'{ngrok_url}/gsheet/update/{cell}/{value}'
 
     try:
-        async with ClientSession(timeout=ClientTimeout(total=3)) as session:
+        async with ClientSession(timeout=ClientTimeout(total=6)) as session:
             async with session.post(url, auth=auth) as resp:
                 logger.info(f"[sheet_update] POST {url} → {resp.status}")
     except ClientError as e:
