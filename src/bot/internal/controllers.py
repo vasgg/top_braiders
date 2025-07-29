@@ -1,4 +1,4 @@
-from asyncio import sleep
+from asyncio import create_task, sleep
 from datetime import UTC, datetime, timedelta
 import json
 from logging import getLogger
@@ -6,8 +6,9 @@ from logging import getLogger
 from aiogram import Bot
 from aiogram.exceptions import TelegramForbiddenError
 import aiohttp
+from aiohttp import BasicAuth, ClientSession
 
-from bot.config import Settings
+from bot.config import Settings, get_settings
 from bot.internal.lexicon import text
 from database.crud.user import get_all_payment_ids, get_user_by_payment_id, get_user_ids_without_payment
 from database.db_connector import DatabaseConnector
@@ -55,7 +56,7 @@ def get_deals_url(settings: Settings, export_id: str) -> str:
 
 async def get_deals(settings: Settings, export_id: str) -> list | None:
     url = get_deals_url(settings, export_id)
-    async with aiohttp.ClientSession() as session:
+    async with ClientSession() as session:
         async with session.get(url) as response:
             response.raise_for_status()
             json_data = await response.json()
@@ -188,3 +189,39 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
                     logger.exception(e)
         logger.info("Users without payment: %s", users_without_payment)
         logger.info(f"{len(users_without_payment)} users without payment are notified")
+
+
+async def sheet_update(cell: str, value: int):
+    settings = get_settings()
+    auth = BasicAuth(
+        settings.ngrok.user.get_secret_value(),
+        settings.ngrok.password.get_secret_value(),
+    )
+    ngrok_url = settings.ngrok.url.get_secret_value()
+
+    async def _send_sheet_update():
+        async with ClientSession() as session:
+            try:
+                await session.post(f'{ngrok_url}/gsheet/update/{cell}/{value}', auth=auth)
+            except Exception:
+                pass
+
+    create_task(_send_sheet_update())
+
+
+async def blink1(color: str):
+    settings = get_settings()
+    auth = BasicAuth(
+        settings.ngrok.user.get_secret_value(),
+        settings.ngrok.password.get_secret_value(),
+    )
+    ngrok_url = settings.ngrok.url.get_secret_value()
+
+    async def _send_color():
+        async with ClientSession() as session:
+            try:
+                await session.get(f'{ngrok_url}/blink/{color}', auth=auth)
+            except Exception:
+                pass
+
+    create_task(_send_color())
