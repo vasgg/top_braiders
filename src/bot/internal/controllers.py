@@ -1,5 +1,6 @@
 import asyncio
 from asyncio import sleep
+from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 import json
 from logging import getLogger
@@ -11,7 +12,7 @@ from aiohttp import BasicAuth, ClientError, ClientSession, ClientTimeout
 
 from bot.config import Settings, get_settings
 from bot.internal.lexicon import text
-from database.crud.user import get_all_payment_ids, get_user_by_payment_id, get_user_ids_without_payment
+from database.crud.user import get_all_payment_ids, get_user_by_payment_id
 from database.db_connector import DatabaseConnector
 from database.models import User
 
@@ -135,7 +136,7 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
             continue
         async with db_connector.session_factory() as db_session:
             payments_set = await get_all_payment_ids(db_session)
-            for deal in deals:
+            for i, deal in enumerate(deals, start=1):
                 payment_id = deal[3]
                 if payment_id in payments_set:
                     user = await get_user_by_payment_id(payment_id, db_session)
@@ -146,50 +147,56 @@ async def daily_routine(settings: Settings, bot: Bot, db_connector: DatabaseConn
                         logger.info("User %s already published, skipping", user.fullname)
                         continue
                     user.is_paid = True
-                    photo_msg = await bot.send_photo(
-                        chat_id=settings.bot.channel_id,
-                        photo=user.photo_id
-                    )
-                    caption = compose_braider_form(user)
-                    await bot.send_message(
-                        chat_id=settings.bot.channel_id,
-                        text=caption,
-                        reply_to_message_id=photo_msg.message_id,
-                    )
+                    try:
+
+                        photo_msg = await bot.send_photo(
+                            chat_id=settings.bot.channel_id,
+                            photo=user.photo_id
+                        )
+                        caption = compose_braider_form(user)
+                        await bot.send_message(
+                            chat_id=settings.bot.channel_id,
+                            text=caption,
+                            reply_to_message_id=photo_msg.message_id,
+                        )
+                    except TelegramForbiddenError:
+                        logger.info("User %s blocked the bot", user.id)
+                    except Exception as e:
+                        logger.exception(e)
                     user.is_published = True
                     db_session.add(user)
                     await db_session.commit()
-                    logger.info("User %s is paid and published", user.fullname)
+                    logger.info("%d/%d. User %s is paid and published", i, len(deals), user.fullname)
                     await sleep(8)
 
             logger.info("Daily routine finished")
-            TARGET_DATES = {
-                "2025-07-24": "7_days_left",
-                "2025-07-28": "3_days_left",
-                "2025-07-31": "0_days_left"
-            }
-            current_date_str = datetime.now(UTC).strftime("%Y-%m-%d")
-            notification_key = TARGET_DATES.get(current_date_str)
-
-            if not notification_key:
-                logger.info("No notification for %s", current_date_str)
-                continue
-
-            users_without_payment = await get_user_ids_without_payment(db_session)
-            for user_id in users_without_payment:
-                try:
-                    await bot.send_message(
-                        chat_id=user_id,
-                        text=text[notification_key],
-                    )
-                    await sleep(0.1)
-                    logger.info("User %s is notified", user_id)
-                except TelegramForbiddenError:
-                    logger.info("User %s blocked the bot", user_id)
-                except Exception as e:
-                    logger.exception(e)
-        logger.info("Users without payment: %s", users_without_payment)
-        logger.info(f"{len(users_without_payment)} users without payment are notified")
+        #     TARGET_DATES = {
+        #         "2025-07-24": "7_days_left",
+        #         "2025-07-28": "3_days_left",
+        #         "2025-07-31": "0_days_left"
+        #     }
+        #     current_date_str = datetime.now(UTC).strftime("%Y-%m-%d")
+        #     notification_key = TARGET_DATES.get(current_date_str)
+        #
+        #     if not notification_key:
+        #         logger.info("No notification for %s", current_date_str)
+        #         continue
+        #
+        #     users_without_payment = await get_user_ids_without_payment(db_session)
+        #     for user_id in users_without_payment:
+        #         try:
+        #             await bot.send_message(
+        #                 chat_id=user_id,
+        #                 text=text[notification_key],
+        #             )
+        #             await sleep(0.1)
+        #             logger.info("User %s is notified", user_id)
+        #         except TelegramForbiddenError:
+        #             logger.info("User %s blocked the bot", user_id)
+        #         except Exception as e:
+        #             logger.exception(e)
+        # logger.info("Users without payment: %s", users_without_payment)
+        # logger.info(f"{len(users_without_payment)} users without payment are notified")
 
 
 async def sheet_update(cell: str, value: int):
